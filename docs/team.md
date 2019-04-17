@@ -6,11 +6,11 @@ title:  Team
 # {{ page.title }}
 
 
-## USER 1
-***UCI Net ID***: ucinetid1
+## Daniel Shih
+***UCI Net ID***: dzshih
 
-## USER 2
-***UCI Net ID***: ucinetid2
+## Agnes Jang
+***UCI Net ID***: agnesj
 
-## USER 3
-***UCI Net ID***: ucinetid3
+## Ryan Yue
+***UCI Net ID***: yuer1
