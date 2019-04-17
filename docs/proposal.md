@@ -3,9 +3,9 @@ layout: default
 title:  Proposal
 ---
 
-# Pokemine Project Proposal
-## Summary
+##  Project Proposal
+### Summary
 
-## AI/ML Algorithms
+### AI/ML Algorithms
 
-## Evaluation Plan
+### Evaluation Plan
