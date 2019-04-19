@@ -1,2 +1,2 @@
-# pokemine
-## CS 175, Project in AI
+# peta
+"We don’t kill animals; we hoard them"
