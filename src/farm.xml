@@ -29,8 +29,6 @@
         <DrawEntity x="3" y="4" z="3" type="Sheep"/>
         <DrawEntity x="4" y="4" z="4" type="Sheep"/>
 
-        <DrawBlock x="6" y="4" z="6" type="hay_block"/>
-
         <!--Spawn a wolf and some sheep outside the pen-->
         <DrawEntity x="9" y="4" z="9" type="Wolf"/>
         <DrawEntity x="15" y="4" z="15" type="Sheep"/>
