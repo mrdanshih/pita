@@ -88,9 +88,11 @@ def missionLoop():
             object = json.loads(msg)
             for entity in object['entities']:
                 if entity["name"] == "Sheep" and entity["id"] not in sheeps:
-                    # if entity["x"]:
-                    reward += 100
-                    sheeps.add(entity["id"])
+                    x = entity["x"]
+                    z = entity["z"]
+                    if x > -3 and x < 8 and z > -3 and z < 8:
+                        reward += 100
+                        sheeps.add(entity["id"])
 
         print(reward)
         for error in world_state.errors:
