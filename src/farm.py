@@ -75,6 +75,12 @@ def waitUntilMissionStart():
     print("Mission running ", end=' ')
 
 
+def isSheepInPen(entity):
+    x = entity["x"]
+    z = entity["z"]
+    return x > -3 and x < 8 and z > -3 and z < 8
+
+
 def missionLoop():
     world_state = agent_host.getWorldState()
     while world_state.is_mission_running:
@@ -87,12 +93,9 @@ def missionLoop():
             msg = world_state.observations[-1].text
             object = json.loads(msg)
             for entity in object['entities']:
-                if entity["name"] == "Sheep" and entity["id"] not in sheeps:
-                    x = entity["x"]
-                    z = entity["z"]
-                    if x > -3 and x < 8 and z > -3 and z < 8:
-                        reward += 100
-                        sheeps.add(entity["id"])
+                if entity["name"] == "Sheep" and entity["id"] not in sheeps and isSheepInPen(entity):
+                    reward += 100
+                    sheeps.add(entity["id"])
 
         print(reward)
         for error in world_state.errors:
