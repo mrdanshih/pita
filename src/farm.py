@@ -40,9 +40,10 @@ class MyAgent:
         self.captured_sheeps = set()
         self.visited_sheeps = set()
         self.world_state = None
-        self.x = 0.5
+        self.x = 0.5  # for discrete movement, agent has to start in middle of the block 0.5, 0.5
         self.z = 0.5
-        self.prev_a = ""
+        self.prev_a = ""  # continue previous action before starting a new one
+        # stall because if you keep moving, you move too fast and the sheep doesnt follow
         self.stall = False
 
     def isSheepInPen(self, entity):
@@ -56,6 +57,7 @@ class MyAgent:
         return not (x == self.x and z == self.z)
 
     def navigateToSheep(self, sheepID):
+        # my shitty dijkstras algorithm lmao
         for entity in self.world_state["entities"]:
             if entity["id"] == sheepID:
                 dx = entity["x"] - self.x
