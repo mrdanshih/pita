@@ -33,6 +33,43 @@ my_mission = None
 my_mission_record = None
 
 
+class MyAgent:
+    def __init__(self, world_state):
+        self.reward = 0
+        self.captured_sheeps = set()
+        self.world_state = None
+        self.x = 0.5
+        self.z = 0.5
+
+    def isSheepInPen(self, entity):
+        x = entity["x"]
+        z = entity["z"]
+        return x > 1 and x < 5 and z > 1 and z < 5
+
+    def characterMoved(self, entity):
+        x = entity["x"]
+        z = entity["z"]
+        return not (x == self.x and z == self.z)
+
+    def updateReward(self):
+        for entity in self.world_state["entities"]:
+            if entity["name"] == "Sheep" and entity["id"] not in self.captured_sheeps and self.isSheepInPen(entity):
+                self.reward += 100
+                self.captured_sheeps.add(entity["id"])
+            elif entity["name"] == "Agnis" and self.characterMoved(entity):
+                self.reward -= 1
+
+    def takeAction(self):
+        return "movenorth 1"
+
+    def updateWorldState(self, world_state):
+        if world_state.number_of_observations_since_last_state > 0:
+            msg = world_state.observations[-1].text
+            ob = json.loads(msg)
+            self.world_state = ob
+            self.updateReward()
+
+
 def setupMission():
     mission_file = './farm.xml'
     global my_mission, my_mission_record
@@ -75,29 +112,15 @@ def waitUntilMissionStart():
     print("Mission running ", end=' ')
 
 
-def isSheepInPen(entity):
-    x = entity["x"]
-    z = entity["z"]
-    return x > -3 and x < 8 and z > -3 and z < 8
-
-
 def missionLoop():
     world_state = agent_host.getWorldState()
+    my_agent = MyAgent(world_state)
     while world_state.is_mission_running:
-        print(".", end="")
         time.sleep(0.1)
-        reward = 0
-        sheeps = set()
         world_state = agent_host.getWorldState()
-        if world_state.number_of_observations_since_last_state > 0:
-            msg = world_state.observations[-1].text
-            object = json.loads(msg)
-            for entity in object['entities']:
-                if entity["name"] == "Sheep" and entity["id"] not in sheeps and isSheepInPen(entity):
-                    reward += 100
-                    sheeps.add(entity["id"])
-
-        print(reward)
+        my_agent.updateWorldState(world_state)
+        agent_host.sendCommand("move 1")
+        print(my_agent.reward)
         for error in world_state.errors:
             print("Error:", error.text)
     print()
@@ -105,6 +128,7 @@ def missionLoop():
 # Mission has ended.
 
 
+hello = "hello"
 if __name__ == "__main__":
     setupMission()
     startMission()

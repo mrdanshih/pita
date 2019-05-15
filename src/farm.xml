@@ -13,9 +13,9 @@
       <FlatWorldGenerator generatorString="3;7,2*3,2;1;village" forceReset="true"/>
       <DrawingDecorator>
         <!--Draw a 10x10 boundary-->
-        <DrawCuboid x1="-3"  y1="4" z1="-3"  x2="8" y2="4" z2="8" type="dark_oak_fence" />
-        <DrawCuboid x1="-2"  y1="4" z1="-2"  x2="7" y2="4" z2="7" type="air" />
-        <DrawBlock x="6" y="4" z="8" type="fence_gate" />
+        <!-- <DrawCuboid x1="-3"  y1="4" z1="-3"  x2="8" y2="4" z2="8" type="dark_oak_fence" /> -->
+        <!-- <DrawCuboid x1="-2"  y1="4" z1="-2"  x2="7" y2="4" z2="7" type="air" />
+        <DrawBlock x="6" y="4" z="8" type="fence_gate" /> -->
 
         <!--Draw a 5x5 pen -->
         <DrawLine x1="1"  y1="4" z1="1"  x2="1" y2="4" z2="5" type="fence" /> 
@@ -30,7 +30,7 @@
         <DrawEntity x="4" y="4" z="4" type="Sheep"/>
 
         <!--Spawn a wolf and some sheep outside the pen-->
-        <DrawEntity x="9" y="4" z="9" type="Wolf"/>
+        <!-- <DrawEntity x="9" y="4" z="9" type="Wolf"/> -->
         <DrawEntity x="15" y="4" z="15" type="Sheep"/>
         <DrawEntity x="-5" y="4" z="-5" type="Sheep"/>
       </DrawingDecorator>
@@ -43,7 +43,7 @@
   <AgentSection mode="Survival">
     <Name>Agnis</Name>
     <AgentStart>
-      <Placement x="0" y="4" z="0" pitch="30" yaw="0"/>
+      <Placement x="0.5" y="4" z="0.5" pitch="30" yaw="0"/>
       <Inventory>
         <InventoryItem slot="0" type="wheat" quantity="1"/>
       </Inventory>
