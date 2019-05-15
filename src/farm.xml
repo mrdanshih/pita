@@ -18,21 +18,21 @@
         <DrawBlock x="6" y="4" z="8" type="fence_gate" /> -->
 
         <!--Draw a 5x5 pen -->
-        <DrawLine x1="1"  y1="4" z1="1"  x2="1" y2="4" z2="5" type="fence" /> 
+        <!-- <DrawLine x1="1"  y1="4" z1="1"  x2="1" y2="4" z2="5" type="fence" /> 
         <DrawLine x1="1"  y1="4" z1="5"  x2="5" y2="4" z2="5" type="fence" /> 
         <DrawLine x1="5"  y1="4" z1="5"  x2="5" y2="4" z2="1" type="fence" />
         <DrawLine x1="5"  y1="4" z1="1"  x2="4" y2="4" z2="1" type="fence" />
         <DrawBlock x="3" y="4" z="1" type="fence_gate" />
-        <DrawLine x1="2"  y1="4" z1="1"  x2="1" y2="4" z2="1" type="fence" />
+        <DrawLine x1="2"  y1="4" z1="1"  x2="1" y2="4" z2="1" type="fence" /> -->
 
         <!--Spawn sheep inside the pen-->
-        <DrawEntity x="3" y="4" z="3" type="Sheep"/>
-        <DrawEntity x="4" y="4" z="4" type="Sheep"/>
+        <!-- <DrawEntity x="3" y="4" z="3" type="Sheep"/>
+        <DrawEntity x="4" y="4" z="4" type="Sheep"/> -->
 
         <!--Spawn a wolf and some sheep outside the pen-->
         <!-- <DrawEntity x="9" y="4" z="9" type="Wolf"/> -->
         <DrawEntity x="15" y="4" z="15" type="Sheep"/>
-        <DrawEntity x="-5" y="4" z="-5" type="Sheep"/>
+        <DrawEntity x="15" y="4" z="30" type="Sheep"/>
       </DrawingDecorator>
 
       <ServerQuitFromTimeUp timeLimitMs="20000"/>

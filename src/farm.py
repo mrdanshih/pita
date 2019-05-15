@@ -21,12 +21,13 @@ from __future__ import print_function
 # Tutorial sample #2: Run simple mission using raw XML
 
 from builtins import range
+from enum import Enum
 import MalmoPython
 import os
 import sys
 import time
 import json
-
+import math
 
 agent_host = MalmoPython.AgentHost()
 my_mission = None
@@ -37,9 +38,12 @@ class MyAgent:
     def __init__(self, world_state):
         self.reward = 0
         self.captured_sheeps = set()
+        self.visited_sheeps = set()
         self.world_state = None
         self.x = 0.5
         self.z = 0.5
+        self.prev_a = ""
+        self.stall = False
 
     def isSheepInPen(self, entity):
         x = entity["x"]
@@ -51,6 +55,27 @@ class MyAgent:
         z = entity["z"]
         return not (x == self.x and z == self.z)
 
+    def navigateToSheep(self, sheepID):
+        for entity in self.world_state["entities"]:
+            if entity["id"] == sheepID:
+                dx = entity["x"] - self.x
+                dz = entity["z"] - self.z
+                dist = dx**2 + dz**2
+                if (dist < 4):
+                    self.prev_a = ""
+                    self.visited_sheeps.add(sheepID)
+                    return ""
+                if abs(dx) > abs(dz):
+                    if dx > 0:
+                        return "moveeast 1"
+                    else:
+                        return "movewest 1"
+                else:
+                    if dz > 0:
+                        return "movesouth 1"
+                    else:
+                        return "movenorth 1"
+
     def updateReward(self):
         for entity in self.world_state["entities"]:
             if entity["name"] == "Sheep" and entity["id"] not in self.captured_sheeps and self.isSheepInPen(entity):
@@ -60,13 +85,30 @@ class MyAgent:
                 self.reward -= 1
 
     def takeAction(self):
-        return "movenorth 1"
+        if self.stall == True:
+            self.stall = False
+            return ""
+        else:
+            self.stall = True
+            if self.prev_a:
+                return self.navigateToSheep(self.prev_a)
+            for e in self.world_state["entities"]:
+                if e["name"] == "Sheep" and not self.isSheepInPen(e) and not e["id"] in self.visited_sheeps:
+                    self.prev_a = e["id"]
+                    return self.navigateToSheep(e["id"])
+
+    def updateCharacter(self, world_state):
+        for e in world_state["entities"]:
+            if e["name"] == "Agnis":
+                self.x = e["x"]
+                self.z = e["z"]
 
     def updateWorldState(self, world_state):
         if world_state.number_of_observations_since_last_state > 0:
             msg = world_state.observations[-1].text
             ob = json.loads(msg)
             self.world_state = ob
+            self.updateCharacter(ob)
             self.updateReward()
 
 
@@ -119,8 +161,9 @@ def missionLoop():
         time.sleep(0.1)
         world_state = agent_host.getWorldState()
         my_agent.updateWorldState(world_state)
-        agent_host.sendCommand("move 1")
-        print(my_agent.reward)
+        if my_agent.takeAction():
+            print(my_agent.takeAction())
+            agent_host.sendCommand(my_agent.takeAction())
         for error in world_state.errors:
             print("Error:", error.text)
     print()
