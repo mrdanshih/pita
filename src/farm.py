@@ -49,7 +49,7 @@ class MyAgent:
     def isSheepInPen(self, entity):
         x = entity["x"]
         z = entity["z"]
-        return x > 1 and x < 5 and z > 1 and z < 5
+        return 1 <  x < 5 and 1 < z < 5
 
     def characterMoved(self, entity):
         x = entity["x"]
