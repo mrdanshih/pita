@@ -4,26 +4,11 @@ import sys
 import time
 import datetime
 import json
-import random
 import numpy as np
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.optimizers import SGD, Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
-
-visited_mark = 0.8  # Cells visited by the rat will be painted by gray 0.8
-rat_mark = 0.5      # The current rat cell will be painteg by gray 0.5
-LEFT = 0
-UP = 1
-RIGHT = 2
-DOWN = 3
-
-# Actions dictionary
-
-# up down right left
-actions = [0, 1, 2, 3]
-
-num_actions = len(actions)
 
 # Exploration factor
 epsilon = 0.1
@@ -51,7 +36,7 @@ class Experience(object):
         return self.model.predict(envstate)[0]
 
     def get_data(self, data_size=10):
-        # envstate 1d size (1st element of episode)
+        # envstate 1d size (1st element of episode
         env_size = self.memory[0][0].size
         mem_size = len(self.memory)
         data_size = min(mem_size, data_size)
@@ -70,114 +55,6 @@ class Experience(object):
                 # reward + gamma * max_a' Q(s', a')
                 targets[i, action] = reward + self.discount * Q_sa
         return inputs, targets
-
-
-def build_model(world, lr=0.001):
-    model = Sequential()
-    model.add(Dense(world.size, input_shape=(world.size,)))
-    model.add(PReLU())
-    model.add(Dense(world.size))
-    model.add(PReLU())
-    model.add(Dense(world.size))
-    model.add(PReLU())
-    model.add(Dense(num_actions))
-    model.compile(optimizer='adam', loss='mse')
-    return model
-
-
-class World:
-    def __init__(self):
-        self.world = self.reset()
-
-    def reset(self):
-        world = np.zeros((10, 10))
-        world[0][0] = 1
-        world[0][9] = 2
-        world[9][9] = 2
-        world[9][0] = 2
-        self.state = (0, 0, 'start')
-        self.total_reward = 0
-        self.total_steps = 30
-        self.world = world
-        return world
-
-    def update_state(self, action):
-        nrows, ncols = self.world.shape
-        nrow, ncol, nmode = self.state
-        self.world[nrow][ncol] = 0
-        nmode = "invalid"
-        if ncol < ncols-1 and action == 2:
-            ncol += 1
-            nmode = "valid"
-        elif ncol > 0 and action == 3:
-            ncol -= 1
-            nmode = "valid"
-        elif nrow < nrows - 1 and action == 1:
-            nrow += 1
-            nmode = "valid"
-        elif nrow > 0 and action == 0:
-            nrow -= 1
-            nmode = "valid"
-        self.world[nrow][ncol] = 1
-        self.state = (nrow, ncol, nmode)
-        #print(self.state, end=", ")
-
-    def get_reward(self):
-        nrows, ncols = self.world.shape
-        row, col, mode = self.state
-        for i in range(nrows):
-            for j in range(ncols):
-                if (self.world[i][j] == 2):
-                    dist = abs(i - row)**2 + abs(j-col)**2
-                    if dist <= 4:
-                        self.world[i][j] = 0
-                        return 100
-
-        if mode == 'invalid':
-            return -2
-        if mode == 'valid':
-            return -1
-
-    def game_status(self):
-        nrows, ncols = self.world.shape
-        sheepLeft = 0
-        for i in range(nrows):
-            for j in range(ncols):
-                if self.world[i][j] == 2:
-                    sheepLeft += 1
-
-        if self.total_steps > 0 and sheepLeft > 0:
-            return "not over"
-        elif self.total_reward < 0:
-            return "lose"
-        else:
-            return "win"
-
-    def observe(self):
-        return self.world.reshape(-1)
-
-    def act(self, action):
-        # print("Action taken: " + str(action), end=", ")
-        self.total_steps -= 1
-        self.update_state(action)
-        reward = self.get_reward()
-        self.total_reward += reward
-        # print("Reward: " + str(self.total_reward))
-        envstate = self.observe()
-        status = self.game_status()
-        return envstate, reward, status
-
-
-def format_time(seconds):
-    if seconds < 400:
-        s = float(seconds)
-        return "%.1f seconds" % (s,)
-    elif seconds < 4000:
-        m = seconds / 60.0
-        return "%.2f minutes" % (m,)
-    else:
-        h = seconds / 3600.0
-        return "%.2f hours" % (h,)
 
 
 def qtrain(model, world):
@@ -254,6 +131,73 @@ def qtrain(model, world):
     print("n_epoch: %d, max_mem: %d, data: %d, time: %s" %
           (epoch, max_memory, data_size, t))
 
+
+def setupMission():
+    mission_file = './farm.xml'
+    global my_mission, my_mission_record
+    with open(mission_file, 'r') as f:
+        print("Loading mission from %s" % mission_file)
+        mission_xml = f.read()
+        my_mission = MalmoPython.MissionSpec(mission_xml, True)
+
+    my_mission_record = MalmoPython.MissionRecordSpec()
+
+
+# Attempt to start a mission:
+def startMission():
+    max_retries = 3
+    for retry in range(max_retries):
+        try:
+            agent_host.startMission(my_mission, my_mission_record)
+            break
+        except RuntimeError as e:
+            if retry == max_retries - 1:
+                print("Error starting mission:", e)
+                exit(1)
+            else:
+                time.sleep(2)
+
+# Loop until mission starts:
+
+
+def waitUntilMissionStart():
+    print("Waiting for the mission to start ", end=' ')
+    world_state = agent_host.getWorldState()
+    while not world_state.has_mission_begun:
+        print(".", end="")
+        time.sleep(0.1)
+        world_state = agent_host.getWorldState()
+        for error in world_state.errors:
+            print("Error:", error.text)
+
+    print()
+    print("Mission running ", end=' ')
+
+
+def missionLoop(model, world):
+    world_state = agent_host.getWorldState()
+    my_agent = MyAgent(world_state)
+    while world_state.is_mission_running:
+        time.sleep(0.1)
+        world_state = agent_host.getWorldState()
+        my_agent.updateWorldState(world_state)
+        if my_agent.takeAction():
+            print(my_agent.takeAction())
+            agent_host.sendCommand(my_agent.takeAction())
+        for error in world_state.errors:
+            print("Error:", error.text)
+    print()
+    print("Mission ended")
+# Mission has ended.
+
+
+if __name__ == "__main__":
+    world = World()
+    model = build_model(world.world)
+    setupMission()
+    startMission()
+    waitUntilMissionStart()
+    missionLoop(model, world)
 
 if __name__ == "__main__":
     world = World()
