@@ -29,6 +29,7 @@ import os
 import sys
 import time
 import math
+import json
 import random
 import numpy as np
 from keras.models import Sequential
@@ -37,7 +38,7 @@ from keras.optimizers import SGD, Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
 
 
-def build_model(world, lr=0.001):
+def build_model(world, num_actions, lr=0.001):
     model = Sequential()
     model.add(Dense(world.size, input_shape=(world.size,)))
     model.add(PReLU())
@@ -45,14 +46,42 @@ def build_model(world, lr=0.001):
     model.add(PReLU())
     model.add(Dense(world.size))
     model.add(PReLU())
-    model.add(Dense(4))
+    model.add(Dense(num_actions))
     model.compile(optimizer='adam', loss='mse')
     return model
 
+def teleport_to_sheep(world):
+    if world.world_state:
+        for entity in world.world_state["entities"]:
+            if entity["name"] == "Sheep":
+                return "tp " + str(entity["x"]) + " 4 " + str(entity["z"] - 1)
+    return ""
+
+
+def take_action(agent_host, world, action):
+    if action == 'hold_wheat':
+        # assume wheat is in slo t2
+        agent_host.sendCommand("hotbar.2 1")
+        agent_host.sendCommand("hotbar.2 0")
+    elif action == 'hide_wheat':
+        agent_host.sendCommand("hotbar.1 1")
+        agent_host.sendCommand("hotbar.1 0")
+    elif action =='teleport_to_sheep':
+        agent_host.sendCommand(teleport_to_sheep(world))
+    else:
+        agent_host.sendCommand(action)
+
+
+def correct_coords(world, agent_host, action):
+    x, z = world.coords
+    if x % 0.5 != 0 or z % 0.5 != 0:
+        x_delta = -0.5 if action == 3 else 0.5
+        z_delta = -0.5 if action == 0 else 0.5
+        agent_host.sendCommand("tp " + str(int(x) + x_delta) + " 4 " + str(int(z) +z_delta))
 
 if __name__ == "__main__":
     world = World()
-    model = build_model(world.world)
+    model = build_model(world.world, world.num_actions())
     max_memory = 1000
     data_size = 50
     experience = Experience(model, max_memory=max_memory)
@@ -64,8 +93,8 @@ if __name__ == "__main__":
         mission_xml = f.read()
         my_mission = MalmoPython.MissionSpec(mission_xml, True)
 
-    max_retries = 3
-    num_repeats = 150
+    max_retries = 5
+    num_repeats = 100
     for i in range(num_repeats):
         world.reset()
         envstate = world.observe()
@@ -94,23 +123,30 @@ if __name__ == "__main__":
             for error in world_state.errors:
                 print("Error:", error.text)
         print()
-
         # -- run the agent in the world -- #
         while world_state.is_mission_running:
-            time.sleep(0.1)
+            time.sleep(0.01)
             prev_envstate = envstate
 
-            if np.random.rand() < 0.1:
-                action = random.choice(world.actions)
+            if np.random.rand() < 0.10:
+                print('Random action ')
+                action = random.choice(world.getValidActions())
             else:
                 action = np.argmax(experience.predict(prev_envstate))
             print(world.actionMap[action], end=": ")
-            agent_host.sendCommand(world.actionMap[action])
+
+            take_action(agent_host, world, world.actionMap[action])
+
             world_state = agent_host.getWorldState()
-            envstate, reward, game_status = world.update_state(world_state)
+            envstate, reward, game_status = world.update_state(world_state, action, agent_host)
             print(reward, game_status)
+
+            # Correct the agent's coordinates in case a sheep pushed it
+            correct_coords(world, agent_host, world.actionMap[action])
+
             game_over = game_status == 'win' or game_status == 'lose'
             episode = [prev_envstate, action, reward, envstate, game_over]
+           # print(episode)
             experience.remember(episode)
             inputs, targets = experience.get_data(data_size=data_size)
             h = model.fit(
