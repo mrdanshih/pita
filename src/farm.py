@@ -45,6 +45,7 @@ class MyAgent:
         self.prev_a = ""  # continue previous action before starting a new one
         # stall because if you keep moving, you move too fast and the sheep doesnt follow
         self.stall = False
+        self.holdingWheat = False
 
     def isSheepInPen(self, entity):
         x = entity["x"]
@@ -55,6 +56,18 @@ class MyAgent:
         x = entity["x"]
         z = entity["z"]
         return not (x == self.x and z == self.z)
+
+    def swapOutWheat(self):
+        if self.holdingWheat:
+            # assumes wheat is in slot 2 so to stop holding wheat switch the slot to 1
+            agent_host.sendCommand("hotbar.1 1")
+            agent_host.sendCommand("hotbar.1 0")
+        else:
+            agent_host.sendCommand("hotbar.2 1")
+            agent_host.sendCommand("hotbar.2 0")
+
+        self.holdingWheat = not self.holdingWheat
+        return "swapping wheat"
 
     def navigateToSheep(self, sheepID):
         # my shitty dijkstras algorithm lmao
@@ -78,6 +91,12 @@ class MyAgent:
                     else:
                         return "movenorth 1"
 
+    def teleportToSheep(self, sheepID):
+        for entity in self.world_state["entities"]:
+            if entity["id"] == sheepID:
+                self.swapOutWheat()
+                return "tp " + str(entity["x"]) + " 4 " + str(entity["z"])
+
     def updateReward(self):
         for entity in self.world_state["entities"]:
             if entity["name"] == "Sheep" and entity["id"] not in self.captured_sheeps and self.isSheepInPen(entity):
@@ -87,17 +106,23 @@ class MyAgent:
                 self.reward -= 1
 
     def takeAction(self):
-        if self.stall == True:
-            self.stall = False
-            return ""
-        else:
-            self.stall = True
-            if self.prev_a:
-                return self.navigateToSheep(self.prev_a)
-            for e in self.world_state["entities"]:
-                if e["name"] == "Sheep" and not self.isSheepInPen(e) and not e["id"] in self.visited_sheeps:
-                    self.prev_a = e["id"]
-                    return self.navigateToSheep(e["id"])
+        # if self.stall == True:
+        #     print("Let's stall!")
+        #     self.stall = False
+        #     return ""
+        # else:
+        self.stall = True
+        if self.prev_a:
+            print("Navigate to sheep")
+            return self.navigateToSheep(self.prev_a)
+        for e in self.world_state["entities"]:
+            if not self.holdingWheat:
+                return self.swapOutWheat()
+            if e["name"] == "Sheep" and not self.isSheepInPen(e) and not e["id"] in self.visited_sheeps:
+                self.prev_a = e["id"]
+                print("teleport to sheep")
+                return self.teleportToSheep(e["id"])
+        return ""
 
     def updateCharacter(self, world_state):
         for e in world_state["entities"]:
@@ -159,13 +184,15 @@ def waitUntilMissionStart():
 def missionLoop():
     world_state = agent_host.getWorldState()
     my_agent = MyAgent(world_state)
+    i = 0
     while world_state.is_mission_running:
-        time.sleep(0.1)
+        time.sleep(0.2)
         world_state = agent_host.getWorldState()
         my_agent.updateWorldState(world_state)
-        if my_agent.takeAction():
-            print(my_agent.takeAction())
-            agent_host.sendCommand(my_agent.takeAction())
+        action = my_agent.takeAction()
+        if action:
+            print(action)
+            agent_host.sendCommand(action)
         for error in world_state.errors:
             print("Error:", error.text)
     print()
