@@ -37,6 +37,9 @@ from keras.layers.core import Dense, Activation
 from keras.optimizers import SGD, Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
 
+actionMap = {0: 'movenorth 1', 1: 'movesouth 1',
+             2: 'moveeast 1', 3: 'movewest 1', 4: 'hotbar.2 1', 5: 'hotbar.1 1'}
+
 
 def build_model(world, num_actions, lr=0.001):
     model = Sequential()
@@ -49,6 +52,7 @@ def build_model(world, num_actions, lr=0.001):
     model.add(Dense(num_actions))
     model.compile(optimizer='adam', loss='mse')
     return model
+
 
 def teleport_to_sheep(world):
     if world.world_state:
@@ -66,7 +70,7 @@ def take_action(agent_host, world, action):
     elif action == 'hide_wheat':
         agent_host.sendCommand("hotbar.1 1")
         agent_host.sendCommand("hotbar.1 0")
-    elif action =='teleport_to_sheep':
+    elif action == 'teleport_to_sheep':
         agent_host.sendCommand(teleport_to_sheep(world))
     else:
         agent_host.sendCommand(action)
@@ -77,11 +81,13 @@ def correct_coords(world, agent_host, action):
     if x % 0.5 != 0 or z % 0.5 != 0:
         x_delta = -0.5 if action == 3 else 0.5
         z_delta = -0.5 if action == 0 else 0.5
-        agent_host.sendCommand("tp " + str(int(x) + x_delta) + " 4 " + str(int(z) +z_delta))
+        agent_host.sendCommand(
+            "tp " + str(int(x) + x_delta) + " 4 " + str(int(z) + z_delta))
+
 
 if __name__ == "__main__":
     world = World()
-    model = build_model(world.world, world.num_actions())
+    model = build_model(world.world, world.actions)
     max_memory = 1000
     data_size = 50
     experience = Experience(model, max_memory=max_memory)
@@ -128,35 +134,41 @@ if __name__ == "__main__":
             time.sleep(0.01)
             prev_envstate = envstate
 
-            if np.random.rand() < 0.10:
-                print('Random action ')
+            if world.shouldReturn:
+                print('Return action: ', end="")
+                action = world.returnToStart()
+            elif np.random.rand() < 0.10:
+                print('Random action: ', end="")
                 action = random.choice(world.getValidActions())
             else:
+                print('Predicted action: ', end="")
                 action = np.argmax(experience.predict(prev_envstate))
-            print(world.actionMap[action], end=": ")
+            print(action)
 
-            take_action(agent_host, world, world.actionMap[action])
+            take_action(agent_host, world, actionMap[action])
 
             world_state = agent_host.getWorldState()
-            envstate, reward, game_status = world.update_state(world_state, action, agent_host)
+            envstate, reward, game_status = world.update_state(
+                world_state, action, agent_host)
             print(reward, game_status)
 
             # Correct the agent's coordinates in case a sheep pushed it
-            correct_coords(world, agent_host, world.actionMap[action])
+            correct_coords(world, agent_host, actionMap[action])
 
             game_over = game_status == 'win' or game_status == 'lose'
             episode = [prev_envstate, action, reward, envstate, game_over]
-           # print(episode)
-            experience.remember(episode)
-            inputs, targets = experience.get_data(data_size=data_size)
-            h = model.fit(
-                inputs,
-                targets,
-                epochs=8,
-                batch_size=16,
-                verbose=0,
-            )
-            loss = model.evaluate(inputs, targets, verbose=0)
+
+            if not world.shouldReturn:
+                experience.remember(episode)
+                inputs, targets = experience.get_data(data_size=data_size)
+                h = model.fit(
+                    inputs,
+                    targets,
+                    epochs=8,
+                    batch_size=16,
+                    verbose=0,
+                )
+                loss = model.evaluate(inputs, targets, verbose=0)
             if game_over:
                 agent_host.sendCommand("quit")
                 break

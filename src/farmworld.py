@@ -2,7 +2,8 @@ import numpy as np
 import json
 import math
 
-GATE_COORDINATES = (0,0)
+GATE_COORDINATES = (0, 0)
+
 
 class World:
     def __init__(self):
@@ -14,30 +15,15 @@ class World:
         self.total_reward = 0
         self.total_steps = 50
         self.sheeps = set()
-        self.actionMap = {0: 'movenorth 1', 1: 'movesouth 1',
-                          2: 'moveeast 1', 3: 'movewest 1'}
-                          # 4: 'hold_wheat', 5: 'hide_wheat'}
-        self.actions = [k for k in self.actionMap]
+
+        self.actions = 4
         self.world = np.zeros((16, 16))
         self.world_state = None
+        self.shouldReturn = False
+        self.stall = False
 
     def getValidActions(self):
-        result = []
-        for act_id, action in self.actionMap.items():
-            my_x, my_z = self.state
-            if act_id == 0 and my_z <= 0:
-                continue
-            if act_id == 1 and my_z >= 14:
-                continue
-            if act_id == 2 and my_x >= 14:
-                continue
-            if act_id == 3 and my_x <= 0:
-                continue
-            result.append(act_id)
-        return result
-
-    def num_actions(self):
-        return len(self.actions)
+        return [0, 1, 2, 3]
 
     def game_status(self):
         if self.total_steps > 0:
@@ -54,10 +40,24 @@ class World:
     def observe(self):
         return self.world.reshape(-1)
 
-    def isSheepInPen(self, entity):
-        x = entity["x"]
-        z = entity["z"]
-        return 1 <  x < 5 and 1 < z < 5
+    def returnToStart(self):
+        x, z = self.state
+        deltax = x - 0.5
+        deltaz = z - 0.5
+        if self.stall:
+            self.stall = False
+            return 4
+
+        self.stall = True
+        if x, z == (0, 0):
+            self.shouldReturn = False
+            # WE SHOULD TELEPORT THE AGENT OR SOMETHING HERE????
+            return 1
+        if deltax > deltaz:
+            return 3
+        else:
+            return 0
+
     def update_state(self, world_state, action, agent_host):
         self.total_steps -= 1
         self.world = np.zeros(self.world.shape)
@@ -72,7 +72,6 @@ class World:
             ob = json.loads(msg)
             self.world_state = ob
             for i in ob["entities"]:
-       
 
                 x = round(i["x"] - 0.5)
                 z = round(i["z"] - 0.5)
@@ -90,11 +89,12 @@ class World:
                         elif i["id"] not in self.sheeps:
                             self.sheeps.add(i["id"])
                             reward += 100
+                            self.shouldReturn = True
                     self.world[x][z] = 2
 
                     # Less negative reward when agent is closer to sheep
                     reward -= dist
-                    
+
                     # Less negative reward when sheep is closer to "GATE"/GOAL
                     dx = i["x"] - GATE_COORDINATES[0]
                     dz = i["z"] - GATE_COORDINATES[1]
