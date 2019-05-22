@@ -47,7 +47,7 @@
     <AgentStart>
       <Placement x="0.5" y="4" z="0.5" pitch="30" yaw="0"/>
       <Inventory>
-        <InventoryItem slot="0" type="wheat" quantity="1"/>
+        <InventoryItem slot="1" type="wheat" quantity="1"/>
       </Inventory>
     </AgentStart>
     <AgentHandlers>
