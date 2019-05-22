@@ -49,7 +49,7 @@ class World:
             return 4
 
         self.stall = True
-        if x, z == (0, 0):
+        if (x, z) == (0, 0):
             self.shouldReturn = False
             # WE SHOULD TELEPORT THE AGENT OR SOMETHING HERE????
             return 1
