@@ -99,16 +99,27 @@ if __name__ == "__main__":
         mission_xml = f.read()
         my_mission = MalmoPython.MissionSpec(mission_xml, True)
 
-    max_retries = 5
+
+    max_retries = 10
     num_repeats = 100
+    mission_avg_rewards = []
+    mission_max_rewards = []
     for i in range(num_repeats):
+        rewards = []
         world.reset()
+
         envstate = world.observe()
 
         print()
         print('Repeat %d of %d' % (i+1, num_repeats))
 
-        my_mission_record = MalmoPython.MissionRecordSpec()
+        # Record video config. Record just the first 10 missions or last 10 in the training
+        if i < 10 or 40 < i < 50 or 90 < i < 100: 
+            my_mission_record = MalmoPython.MissionRecordSpec("sheep_lurer_recording_" + str(i) + ".tgz")
+            my_mission.requestVideo(800, 500)
+            my_mission_record.recordMP4(30, 1000000); #records video with 30fps and at 1000000 bit rate
+            my_mission.setViewpoint( 1 )
+
         for retry in range(max_retries):
             try:
                 agent_host.startMission(my_mission, my_mission_record)
@@ -129,6 +140,9 @@ if __name__ == "__main__":
             for error in world_state.errors:
                 print("Error:", error.text)
         print()
+         # Hide the wheat to start each mission.
+        agent_host.sendCommand("hotbar.1 1")
+        agent_host.sendCommand("hotbar.1 0")
         # -- run the agent in the world -- #
         while world_state.is_mission_running:
             time.sleep(0.01)
@@ -151,6 +165,7 @@ if __name__ == "__main__":
             envstate, reward, game_status = world.update_state(
                 world_state, action, agent_host)
             print(reward, game_status)
+            rewards.append(reward)
 
             # Correct the agent's coordinates in case a sheep pushed it
             correct_coords(world, agent_host, actionMap[action])
@@ -169,11 +184,23 @@ if __name__ == "__main__":
                     verbose=0,
                 )
                 loss = model.evaluate(inputs, targets, verbose=0)
+               
+
             if game_over:
                 agent_host.sendCommand("quit")
                 break
         # -- clean up -- #
+
+        # compute average reward, and max reward
+        template = "Iteration: {:d} | Average Reward: {:.4f} | Max Reward: {:.4f}"
+        avg_reward = sum(rewards) / len(rewards)
+        mission_avg_rewards.append(avg_reward)
+        max_reward = max([r for r in rewards if r != -1]) # ignore -1 rewards
+        mission_max_rewards.append(max_reward)
+        print(template.format(i, avg_reward if rewards else 0, max_reward if rewards else 0))
         time.sleep(0.5)  # (let the Mod reset)
+    print("All mission average rewards: ", mission_avg_rewards)
+    print("All mission max rewards: ", mission_max_rewards)
     h5file = "model" + ".h5"
     json_file = "model" + ".json"
     model.save_weights(h5file, overwrite=True)
