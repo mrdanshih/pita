@@ -8,6 +8,7 @@
   <ServerSection>
     <ServerInitialConditions>
         <Time><StartTime>1</StartTime></Time>
+        <Weather>clear</Weather>
     </ServerInitialConditions>
     <ServerHandlers>
       <FlatWorldGenerator generatorString="3;7,2*3,2;1;village"/>
