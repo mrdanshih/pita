@@ -60,6 +60,7 @@
       <ObservationFromNearbyEntities>
           <Range name="entities" xrange="40" yrange="40" zrange="40"/>
       </ObservationFromNearbyEntities>
+      <MissionQuitCommands quitDescription="done"/>
     </AgentHandlers>
   </AgentSection>
 
