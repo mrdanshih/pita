@@ -114,7 +114,7 @@ if __name__ == "__main__":
         print('Repeat %d of %d' % (i+1, num_repeats))
 
         # Record video config. Record just the first 10 missions or last 10 in the training
-        if i < 10 or 40 < i < 50 or 90 < i < 100: 
+        if i < 10 or 40 < i < 50 or 90 < i < 100:
             my_mission_record = MalmoPython.MissionRecordSpec("sheep_lurer_recording_" + str(i) + ".tgz")
             my_mission.requestVideo(800, 500)
             my_mission_record.recordMP4(30, 1000000); #records video with 30fps and at 1000000 bit rate

@@ -17,7 +17,8 @@ class World:
         self.total_steps = 100
         self.sheeps = set()
 
-        self.actions = 6
+        self.actions = 5
+        self.prevAction = None
         self.world = np.zeros((16, 16))
         self.world_state = None
         self.shouldReturn = False
@@ -25,7 +26,7 @@ class World:
         self.stall = False
 
     def getValidActions(self):
-        return [0, 1, 2, 3, 4, 5]
+        return [0, 1, 2, 3, 4]
 
     def game_status(self):
         if self.total_steps > 0:
@@ -65,6 +66,12 @@ class World:
             print('INVALID ACCTION')
             reward -= 500
 
+        if action == 4:
+            if self.prevAction == 4:    # Punish redundantly choosing show wheat
+                reward -= 200
+            else:
+                reward += 50
+
         if world_state.number_of_observations_since_last_state > 0:
             msg = world_state.observations[-1].text
             ob = json.loads(msg)
@@ -82,9 +89,9 @@ class World:
                     row, col = self.state
                     dist = (x-row)**2 + (z-col)**2
                     if dist <= 4:
-                        # Near sheep, show wheat. (hard-coded policy when close, but agent could also learn to show it when approaching)
-                        agent_host.sendCommand("hotbar.2 1")
-                        agent_host.sendCommand("hotbar.2 0")
+                        # # Near sheep, show wheat. (hard-coded policy when close, but agent could also learn to show it when approaching)
+                        # agent_host.sendCommand("hotbar.2 1")
+                        # agent_host.sendCommand("hotbar.2 0")
 
                         if (row, col) == (0, 0):
                             reward += 300
@@ -93,13 +100,7 @@ class World:
                             reward += 100
                             self.shouldReturn = True
                         if action == 4: # Good if the action shows wheat near a sheep:
-                            reward += 100
-                        elif action == 5:
-                            reward -= 100
-               
-                    else:
-                        if action in (4,5): # Punish agent for wasting show/hide wheat action when not near sheep
-                            reward -= 100
+                            reward += 200
 
                     self.world[x][z] = 2
 
@@ -113,7 +114,7 @@ class World:
                     if dist2 < 50:
                         reward += 100
                     reward -= dist2
-
+        self.prevAction = action
         self.total_reward += reward
         envstate = self.observe()
         status = self.game_status()
