@@ -5,7 +5,7 @@ title: Home
 
 ## Reinforcement Learning in Minecraft with Malmo
 
-<img src="pics/sheep_lured_2.png" width="600" style="display: block; margin: auto"> 
+<img src="pics/sheep_lured_2.png" width="600"> 
                                        
 An AI for sheep herding. We apply reinforcement learning techniques to train an agent to lure sheep into a pen, within the Minecraft Malmo artifical intelligence platform.
 
