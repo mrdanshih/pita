@@ -37,7 +37,7 @@ Although this particular policy is hardcoded, the agent still must learn that to
 - Negative of the Euclidean distance that the sheep is from the pen (negatively affects the reward, as the above one does)
 - If the agent is within a distance of 4 to the sheep, then reward the agent with +100 reward (one time reward for making it to the sheep)
 - If the sheep makes it to the pen (lured by the agent), then reward the agent with +500 reward
-  - Also reward the agent with +100 reward when it’s close to the pen
+    - Also reward the agent with +100 reward when it’s close to the pen
 - If the agent chooses to show the wheat, give them at +50 reward as encouragement to do so in future episodes. However, if the agent keeps choosing the wheat in succession, (i.e. previous action was also show wheat), then the agent will be penalized -200 to discourage wasting actions on that.
 
 ![Image of Deep Q Network](deepq.jpg)
@@ -59,8 +59,7 @@ The overall learning algorithm used is thus as follows. It’s based off of taki
 - Calculate the reward for that action.
 - Store the episode (experience), which consists of the previous state, action, reward, and next state (resulting from the just taken action) into the model.
 - Update the neural network (using the Adam algorithm, a variant of stochastic gradient descent) weights using the episodes stored in the model.
-  - We update the Q-value for a particular state, action pair by using a Bellman equation:
-    - Reward + discount \* [Max Q value from next state]
+    - We update the Q-value for a particular state, action pair by using a Bellman equation: - Reward + discount \* [Max Q value from next state]
     - We use a discount of 0.95 in this model
 
 ### Evaluation
