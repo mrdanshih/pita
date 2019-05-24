@@ -3,7 +3,7 @@ import json
 import math
 import time
 
-GATE_COORDINATES = (0, 0)
+GATE_COORDINATES = (3, -3)
 
 
 class World:
@@ -12,6 +12,7 @@ class World:
 
     def reset(self):
         self.coords = (0, 0)
+        self.prevCoords = (0, 0)
         self.state = (0, 0)
         self.total_reward = 0
         self.total_steps = 100
@@ -23,7 +24,6 @@ class World:
         self.world_state = None
         self.shouldReturn = False
         self.holding_wheat = False
-        self.stall = False
 
     def getValidActions(self):
         return [0, 1, 2, 3, 4]
@@ -43,19 +43,32 @@ class World:
     def observe(self):
         return self.world.reshape(-1)
 
+    def agentInPen(self):
+        x, z = self.state
+        return 5 > x > 0 and -1 > z > -5
+
+    def sheepInPen(self, x, z):
+        return 6 > x > 0 and -1 > z > -5
+
     def returnToStart(self):
         x, z = self.state
-        deltax = x - 0.5
-        deltaz = z - 0.5
-        time.sleep(0.25)
-        if (x, z) == (0, 0):
-            self.shouldReturn = False
-            # WE SHOULD TELEPORT THE AGENT OR SOMETHING HERE????
-            return 1
-        if deltax > deltaz:
+        time.sleep(0.3)
+
+        if self.agentInPen():
+            if self.shouldReturn:
+                self.shouldReturn = False
+                return 5
+            else:
+                return 6
+
+        if x > 9 and z < -1:
             return 3
-        else:
+        elif x < 8 and z > -3:
+            return 2
+        elif z > -3:
             return 0
+        else:
+            return 3
 
     def update_state(self, world_state, action, agent_host):
         self.total_steps -= 1
@@ -66,13 +79,15 @@ class World:
             print('INVALID ACCTION')
             reward -= 500
 
-        if action == 4:
-            if self.prevAction == 4:    # Punish redundantly choosing show wheat
-                reward -= 200
-            else:
-                reward += 50
-
         if world_state.number_of_observations_since_last_state > 0:
+            if action == 4:
+                if self.prevAction == 4:    # Punish redundantly choosing show wheat
+                    reward -= 200
+                else:
+                    reward += 50
+            elif self.coords == self.prevCoords:    # Punish move actions that lead to nowhere (due to hitting border for example)
+                reward -= 200
+
             msg = world_state.observations[-1].text
             ob = json.loads(msg)
             self.world_state = ob
@@ -81,6 +96,7 @@ class World:
                 x = round(i["x"] - 0.5)
                 z = round(i["z"] - 0.5)
                 if i["name"] == "Agnis":
+                    self.prevCoords = self.coords
                     self.coords = (i["x"], i["z"])
                     self.world[x][z] = 1
                     self.state = (x, z)
@@ -93,13 +109,13 @@ class World:
                         # agent_host.sendCommand("hotbar.2 1")
                         # agent_host.sendCommand("hotbar.2 0")
 
-                        if (row, col) == (0, 0):
-                            reward += 300
+                        if self.sheepInPen(x, z):
+                            reward += 500
                         elif i["id"] not in self.sheeps:
                             self.sheeps.add(i["id"])
                             reward += 100
                             self.shouldReturn = True
-                        if action == 4: # Good if the action shows wheat near a sheep:
+                        if action == 4:  # Good if the action shows wheat near a sheep:
                             reward += 200
 
                     self.world[x][z] = 2
