@@ -21,161 +21,193 @@ from __future__ import print_function
 # Tutorial sample #2: Run simple mission using raw XML
 
 from builtins import range
+from farmworld import World
+from myagent import Experience
 from enum import Enum
 import MalmoPython
 import os
 import sys
 import time
-import json
 import math
+import json
+import random
+import numpy as np
+from keras.models import Sequential
+from keras.layers.core import Dense, Activation
+from keras.optimizers import SGD, Adam, RMSprop
+from keras.layers.advanced_activations import PReLU
 
-agent_host = MalmoPython.AgentHost()
-my_mission = None
-my_mission_record = None
-
-
-class MyAgent:
-    def __init__(self, world_state):
-        self.reward = 0
-        self.captured_sheeps = set()
-        self.visited_sheeps = set()
-        self.world_state = None
-        self.x = 0.5  # for discrete movement, agent has to start in middle of the block 0.5, 0.5
-        self.z = 0.5
-        self.prev_a = ""  # continue previous action before starting a new one
-        # stall because if you keep moving, you move too fast and the sheep doesnt follow
-        self.stall = False
-
-    def isSheepInPen(self, entity):
-        x = entity["x"]
-        z = entity["z"]
-        return 1 <  x < 5 and 1 < z < 5
-
-    def characterMoved(self, entity):
-        x = entity["x"]
-        z = entity["z"]
-        return not (x == self.x and z == self.z)
-
-    def navigateToSheep(self, sheepID):
-        # my shitty dijkstras algorithm lmao
-        for entity in self.world_state["entities"]:
-            if entity["id"] == sheepID:
-                dx = entity["x"] - self.x
-                dz = entity["z"] - self.z
-                dist = dx**2 + dz**2
-                if (dist < 4):
-                    self.prev_a = ""
-                    self.visited_sheeps.add(sheepID)
-                    return ""
-                if abs(dx) > abs(dz):
-                    if dx > 0:
-                        return "moveeast 1"
-                    else:
-                        return "movewest 1"
-                else:
-                    if dz > 0:
-                        return "movesouth 1"
-                    else:
-                        return "movenorth 1"
-
-    def updateReward(self):
-        for entity in self.world_state["entities"]:
-            if entity["name"] == "Sheep" and entity["id"] not in self.captured_sheeps and self.isSheepInPen(entity):
-                self.reward += 100
-                self.captured_sheeps.add(entity["id"])
-            elif entity["name"] == "Agnis" and self.characterMoved(entity):
-                self.reward -= 1
-
-    def takeAction(self):
-        if self.stall == True:
-            self.stall = False
-            return ""
-        else:
-            self.stall = True
-            if self.prev_a:
-                return self.navigateToSheep(self.prev_a)
-            for e in self.world_state["entities"]:
-                if e["name"] == "Sheep" and not self.isSheepInPen(e) and not e["id"] in self.visited_sheeps:
-                    self.prev_a = e["id"]
-                    return self.navigateToSheep(e["id"])
-
-    def updateCharacter(self, world_state):
-        for e in world_state["entities"]:
-            if e["name"] == "Agnis":
-                self.x = e["x"]
-                self.z = e["z"]
-
-    def updateWorldState(self, world_state):
-        if world_state.number_of_observations_since_last_state > 0:
-            msg = world_state.observations[-1].text
-            ob = json.loads(msg)
-            self.world_state = ob
-            self.updateCharacter(ob)
-            self.updateReward()
+actionMap = {0: 'movenorth 1', 1: 'movesouth 1',
+             2: 'moveeast 1', 3: 'movewest 1', 4: 'hotbar.2 1', 5: 'hotbar.1 1', 6: "tp 0.5 4 0.5"}
 
 
-def setupMission():
+def build_model(world, num_actions, lr=0.001):
+    model = Sequential()
+    model.add(Dense(world.size, input_shape=(world.size,)))
+    model.add(PReLU())
+    model.add(Dense(world.size))
+    model.add(PReLU())
+    model.add(Dense(world.size))
+    model.add(PReLU())
+    model.add(Dense(num_actions))
+    model.compile(optimizer='adam', loss='mse')
+    return model
+
+
+def teleport_to_sheep(world):
+    if world.world_state:
+        for entity in world.world_state["entities"]:
+            if entity["name"] == "Sheep":
+                return "tp " + str(entity["x"]) + " 4 " + str(entity["z"] - 1)
+    return ""
+
+
+def take_action(agent_host, world, action):
+    if action == 'hold_wheat':
+        # assume wheat is in slo t2
+        agent_host.sendCommand("hotbar.2 1")
+        agent_host.sendCommand("hotbar.2 0")
+    elif action == 'hide_wheat':
+        agent_host.sendCommand("hotbar.1 1")
+        agent_host.sendCommand("hotbar.1 0")
+    elif action == 'teleport_to_sheep':
+        agent_host.sendCommand(teleport_to_sheep(world))
+    else:
+        agent_host.sendCommand(action)
+
+
+def correct_coords(world, agent_host, action):
+    x, z = world.coords
+    if x % 0.5 != 0 or z % 0.5 != 0:
+        x_delta = -0.5 if action == 3 else 0.5
+        z_delta = -0.5 if action == 0 else 0.5
+        agent_host.sendCommand(
+            "tp " + str(int(x) + x_delta) + " 4 " + str(int(z) + z_delta))
+
+
+if __name__ == "__main__":
+    world = World()
+    model = build_model(world.world, world.actions)
+    max_memory = 1000
+    data_size = 50
+    experience = Experience(model, max_memory=max_memory)
+    agent_host = MalmoPython.AgentHost()
+    # -- set up the mission -- #
     mission_file = './farm.xml'
-    global my_mission, my_mission_record
     with open(mission_file, 'r') as f:
         print("Loading mission from %s" % mission_file)
         mission_xml = f.read()
         my_mission = MalmoPython.MissionSpec(mission_xml, True)
 
-    my_mission_record = MalmoPython.MissionRecordSpec()
+    max_retries = 10
+    num_repeats = 100
+    mission_avg_rewards = []
+    mission_max_rewards = []
+    for i in range(num_repeats):
+        rewards = []
+        world.reset()
 
+        envstate = world.observe()
 
-# Attempt to start a mission:
-def startMission():
-    max_retries = 3
-    for retry in range(max_retries):
-        try:
-            agent_host.startMission(my_mission, my_mission_record)
-            break
-        except RuntimeError as e:
-            if retry == max_retries - 1:
-                print("Error starting mission:", e)
-                exit(1)
+        print()
+        print('Repeat %d of %d' % (i+1, num_repeats))
+
+        # Record video config. Record just the first 10 missions or last 10 in the training
+        if i < 10 or 40 < i < 50 or 90 < i < 100:
+            my_mission_record = MalmoPython.MissionRecordSpec(
+                "sheep_lurer_recording_" + str(i) + ".tgz")
+            my_mission.requestVideo(800, 500)
+            # records video with 30fps and at 1000000 bit rate
+            my_mission_record.recordMP4(30, 1000000)
+            my_mission.setViewpoint(1)
+
+        for retry in range(max_retries):
+            try:
+                agent_host.startMission(my_mission, my_mission_record)
+                break
+            except RuntimeError as e:
+                if retry == max_retries - 1:
+                    print("Error starting mission:", e)
+                    exit(1)
+                else:
+                    time.sleep(2.5)
+
+        print("Waiting for the mission to start", end=' ')
+        world_state = agent_host.getWorldState()
+        while not world_state.has_mission_begun:
+            print(".", end="")
+            time.sleep(0.1)
+            world_state = agent_host.getWorldState()
+            for error in world_state.errors:
+                print("Error:", error.text)
+        print()
+        # Hide the wheat to start each mission.
+        agent_host.sendCommand("hotbar.1 1")
+        agent_host.sendCommand("hotbar.1 0")
+        # -- run the agent in the world -- #
+        while world_state.is_mission_running:
+            time.sleep(0.01)
+            prev_envstate = envstate
+
+            remember = True
+            if world.shouldReturn:
+                print('Return action: ', end="")
+                action = world.returnToStart()
+                remember = False
+            elif np.random.rand() < 0.10:
+                print('Random action: ', end="")
+                action = random.choice(world.getValidActions())
             else:
-                time.sleep(2)
+                print('Predicted action: ', end="")
+                action = np.argmax(experience.predict(prev_envstate))
+            print(action)
 
-# Loop until mission starts:
+            take_action(agent_host, world, actionMap[action])
 
+            world_state = agent_host.getWorldState()
+            envstate, reward, game_status = world.update_state(
+                world_state, action, agent_host)
+            print(reward, game_status)
+            rewards.append(reward)
 
-def waitUntilMissionStart():
-    print("Waiting for the mission to start ", end=' ')
-    world_state = agent_host.getWorldState()
-    while not world_state.has_mission_begun:
-        print(".", end="")
-        time.sleep(0.1)
-        world_state = agent_host.getWorldState()
-        for error in world_state.errors:
-            print("Error:", error.text)
+            # Correct the agent's coordinates in case a sheep pushed it
+            correct_coords(world, agent_host, actionMap[action])
 
-    print()
-    print("Mission running ", end=' ')
+            game_over = game_status == 'win' or game_status == 'lose'
+            episode = [prev_envstate, action, reward, envstate, game_over]
 
+            if remember:
+                experience.remember(episode)
+                inputs, targets = experience.get_data(data_size=data_size)
+                h = model.fit(
+                    inputs,
+                    targets,
+                    epochs=8,
+                    batch_size=16,
+                    verbose=0,
+                )
+                loss = model.evaluate(inputs, targets, verbose=0)
 
-def missionLoop():
-    world_state = agent_host.getWorldState()
-    my_agent = MyAgent(world_state)
-    while world_state.is_mission_running:
-        time.sleep(0.1)
-        world_state = agent_host.getWorldState()
-        my_agent.updateWorldState(world_state)
-        if my_agent.takeAction():
-            print(my_agent.takeAction())
-            agent_host.sendCommand(my_agent.takeAction())
-        for error in world_state.errors:
-            print("Error:", error.text)
-    print()
-    print("Mission ended")
-# Mission has ended.
+            if game_over:
+                agent_host.sendCommand("quit")
+                break
+        # -- clean up -- #
 
+        # compute average reward, and max reward
+        template = "Iteration: {:d} | Average Reward: {:.4f} | Max Reward: {:.4f}"
+        avg_reward = sum(rewards) / len(rewards)
+        mission_avg_rewards.append(avg_reward)
+        max_reward = max([r for r in rewards if r != -1])  # ignore -1 rewards
+        mission_max_rewards.append(max_reward)
+        print(template.format(i, avg_reward if rewards else 0,
+                              max_reward if rewards else 0))
+        time.sleep(0.5)  # (let the Mod reset)
+    print("All mission average rewards: ", mission_avg_rewards)
+    print("All mission max rewards: ", mission_max_rewards)
+    h5file = "model" + ".h5"
+    json_file = "model" + ".json"
+    model.save_weights(h5file, overwrite=True)
+    with open(json_file, "w") as outfile:
+        json.dump(model.to_json(), outfile)
 
-hello = "hello"
-if __name__ == "__main__":
-    setupMission()
-    startMission()
-    waitUntilMissionStart()
-    missionLoop()
+    print("Done.")

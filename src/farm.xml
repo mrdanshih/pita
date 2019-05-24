@@ -8,22 +8,21 @@
   <ServerSection>
     <ServerInitialConditions>
         <Time><StartTime>1</StartTime></Time>
+        <Weather>clear</Weather>
     </ServerInitialConditions>
     <ServerHandlers>
-      <FlatWorldGenerator generatorString="3;7,2*3,2;1;village" forceReset="true"/>
+      <FlatWorldGenerator generatorString="3;7,2*3,2;1;village"/>
       <DrawingDecorator>
-        <!--Draw a 10x10 boundary-->
-        <!-- <DrawCuboid x1="-3"  y1="4" z1="-3"  x2="8" y2="4" z2="8" type="dark_oak_fence" /> -->
-        <!-- <DrawCuboid x1="-2"  y1="4" z1="-2"  x2="7" y2="4" z2="7" type="air" />
-        <DrawBlock x="6" y="4" z="8" type="fence_gate" /> -->
+        <!--Draw a 15x15 boundary-->
+        <DrawCuboid x1="-1"  y1="4" z1="-6"  x2="15" y2="4" z2="15" type="dark_oak_fence" />
+        <DrawCuboid x1="0"  y1="4" z1="-5"  x2="14" y2="4" z2="14" type="air" />
+
 
         <!--Draw a 5x5 pen -->
-        <!-- <DrawLine x1="1"  y1="4" z1="1"  x2="1" y2="4" z2="5" type="fence" /> 
-        <DrawLine x1="1"  y1="4" z1="5"  x2="5" y2="4" z2="5" type="fence" /> 
-        <DrawLine x1="5"  y1="4" z1="5"  x2="5" y2="4" z2="1" type="fence" />
-        <DrawLine x1="5"  y1="4" z1="1"  x2="4" y2="4" z2="1" type="fence" />
-        <DrawBlock x="3" y="4" z="1" type="fence_gate" />
-        <DrawLine x1="2"  y1="4" z1="1"  x2="1" y2="4" z2="1" type="fence" /> -->
+        <DrawLine x1="0"  y1="4" z1="-1"  x2="7" y2="4" z2="-1" type="fence" /> 
+        <DrawBlock x="7" y="4" z="-2 " type="fence" />
+        <DrawBlock x="7" y="4" z="-5 " type="fence" />
+        
 
         <!--Spawn sheep inside the pen-->
         <!-- <DrawEntity x="3" y="4" z="3" type="Sheep"/>
@@ -31,8 +30,8 @@
 
         <!--Spawn a wolf and some sheep outside the pen-->
         <!-- <DrawEntity x="9" y="4" z="9" type="Wolf"/> -->
-        <DrawEntity x="15" y="4" z="15" type="Sheep"/>
-        <DrawEntity x="15" y="4" z="30" type="Sheep"/>
+        <DrawEntity x="14" y="4" z="15" type="Sheep"/>
+ <!--        <DrawEntity x="14" y="4" z="1" type="Sheep"/> -->
       </DrawingDecorator>
 
       <ServerQuitFromTimeUp timeLimitMs="20000"/>
@@ -45,16 +44,20 @@
     <AgentStart>
       <Placement x="0.5" y="4" z="0.5" pitch="30" yaw="0"/>
       <Inventory>
-        <InventoryItem slot="0" type="wheat" quantity="1"/>
+        <InventoryItem slot="1" type="wheat" quantity="1"/>
       </Inventory>
     </AgentStart>
     <AgentHandlers>
       <DiscreteMovementCommands/>
       <ObservationFromFullStats/>
+      <AbsoluteMovementCommands/>
+      <ContinuousMovementCommands turnSpeedDegs="480"/>
+      <InventoryCommands />
       <RewardForSendingCommand reward="-1" />
       <ObservationFromNearbyEntities>
           <Range name="entities" xrange="40" yrange="40" zrange="40"/>
       </ObservationFromNearbyEntities>
+      <MissionQuitCommands quitDescription="done"/>
     </AgentHandlers>
   </AgentSection>
 
