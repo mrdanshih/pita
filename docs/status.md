@@ -61,7 +61,7 @@ The overall learning algorithm used is thus as follows. It’s based off of taki
 - Calculate the reward for that action.
 - Store the episode (experience), which consists of the previous state, action, reward, and next state (resulting from the just taken action) into the model.
 - Update the neural network (using the Adam algorithm, a variant of stochastic gradient descent) weights using the episodes stored in the model.
-  - We update the Q-value for a particular state, action pair by using a `Bellman equation: - Reward + discount \* [Max Q value from next state]`
+  - We update the Q-value for a particular state, action pair by using a `Bellman equation: - Reward + discount * [Max Q value from next state]`
   - We use a discount of 0.95 in this model
 
 ### Evaluation
