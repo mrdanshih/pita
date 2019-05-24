@@ -40,7 +40,7 @@ Although this particular policy is hardcoded, the agent still must learn that to
   - Also reward the agent with +100 reward when it’s close to the pen
 - If the agent chooses to show the wheat, give them at +50 reward as encouragement to do so in future episodes. However, if the agent keeps choosing the wheat in succession, (i.e. previous action was also show wheat), then the agent will be penalized -200 to discourage wasting actions on that.
 
-![Image of Deep Q Network](deepq.jpg)
+<img src="deepq.jpg" width="600" style="display: block; margin: auto">
 
 Figure 1. Visualization of Neural Network
 
@@ -68,8 +68,8 @@ Currently, the agent is score is determined based on his ability to lure the she
 
 Below are some graphs showing the agent's score over time.
 
-<img src="graph1.png" width="600"> 
-<img src="graph2.png" width="600">
+<img src="graph1.png" width="600" style="display: block; margin: auto"> 
+<img src="graph2.png" width="600" style="display: block; margin: auto">
 
 ### Remaining Goals and Challenges
 
