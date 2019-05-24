@@ -44,7 +44,7 @@ Although this particular policy is hardcoded, the agent still must learn that to
 
 Figure 1. Visualization of Neural Network
 
-For our neural network, the 256 nodes comes from our 16x16 pen space, there are `16\*16 = 256 cells` accessible to the agent.
+For our neural network, the 256 nodes comes from our 16x16 pen space, there are `16*16 = 256 cells` accessible to the agent.
 
 The keras deep learning library is configured to use 4 input layers in a neural network, with the reinforcement learning helping tweak the neural network so we develop an optimal decision policy.
 
