@@ -37,10 +37,10 @@ Although this particular policy is hardcoded, the agent still must learn that to
 - Negative of the Euclidean distance that the sheep is from the pen (negatively affects the reward, as the above one does)
 - If the agent is within a distance of 4 to the sheep, then reward the agent with +100 reward (one time reward for making it to the sheep)
 - If the sheep makes it to the pen (lured by the agent), then reward the agent with +500 reward
-  -- Also reward the agent with +100 reward when it’s close to the pen
+  - Also reward the agent with +100 reward when it’s close to the pen
 - If the agent chooses to show the wheat, give them at +50 reward as encouragement to do so in future episodes. However, if the agent keeps choosing the wheat in succession, (i.e. previous action was also show wheat), then the agent will be penalized -200 to discourage wasting actions on that.
 
-![Image of Deep Q Network](./deepq.jpg)
+![Image of Deep Q Network](deepq.jpg)
 
 Figure 1. Visualization of Neural Network
 
@@ -59,9 +59,9 @@ The overall learning algorithm used is thus as follows. It’s based off of taki
 - Calculate the reward for that action.
 - Store the episode (experience), which consists of the previous state, action, reward, and next state (resulting from the just taken action) into the model.
 - Update the neural network (using the Adam algorithm, a variant of stochastic gradient descent) weights using the episodes stored in the model.
-  -- We update the Q-value for a particular state, action pair by using a Bellman equation:
-  --- Reward + discount \* [Max Q value from next state]
-  --- We use a discount of 0.95 in this model
+  - We update the Q-value for a particular state, action pair by using a Bellman equation:
+    - Reward + discount \* [Max Q value from next state]
+    - We use a discount of 0.95 in this model
 
 ### Evaluation
 
@@ -69,16 +69,16 @@ Currently, the agent is score is determined based on his ability to lure the she
 
 Below are some graphs showing the agent's score over time.
 
-![Image of Learning to Show Wheat](./graph1.png)
-![Image of Showing Wheat](./graph2.png)
+![Image of Learning to Show Wheat](graph1.png)
+![Image of Showing Wheat](graph2.png)
 
 ### Remaining Goals and Challenges
 
-# Goals
+#### Goals
 
 Right now, our agent gets pretty good at luring one sheep back to the pen. In the following weeks, our goal is to expand the agent’s ability to luring multiple sheep in the same episode in order to achieve a higher reward. We would also like to train our agent with more episodes so that the agent can get a better average win rate and a better average final score. Lastly, we would want to expand our world slightly so that the sheep are able to spread out. This way, we can truly evaluate the agent’s ability to navigate to the sheep and lure them back to the pen.
 
-# Challenges
+#### Challenges
 
 A major challenge that we anticipate is the long training time of our deep Q network. Given that each episode is 20 seconds, running 1000 episodes will take over 5 hours of training time. We need to be mindful of this training time and give ourselves enough buffer time before the final report is due in order to train the agent. We also need to make sure that we are saving the weights of our neural network so that we don’t start from scratch every time we make a change.
 
