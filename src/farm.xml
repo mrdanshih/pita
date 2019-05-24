@@ -14,19 +14,15 @@
       <FlatWorldGenerator generatorString="3;7,2*3,2;1;village"/>
       <DrawingDecorator>
         <!--Draw a 15x15 boundary-->
-        <DrawCuboid x1="-2"  y1="4" z1="-2"  x2="15" y2="4" z2="15" type="dark_oak_fence" />
-        <DrawCuboid x1="-1"  y1="4" z1="-1"  x2="14" y2="4" z2="14" type="air" />
-        <DrawBlock x="6" y="4" z="15 " type="fence_gate" />
+        <DrawCuboid x1="-1"  y1="4" z1="-6"  x2="15" y2="4" z2="15" type="dark_oak_fence" />
+        <DrawCuboid x1="0"  y1="4" z1="-5"  x2="14" y2="4" z2="14" type="air" />
+
 
         <!--Draw a 5x5 pen -->
-<!--         <DrawLine x1="1"  y1="4" z1="1"  x2="1" y2="4" z2="5" type="fence" /> 
-        <DrawLine x1="1"  y1="4" z1="5"  x2="2" y2="4" z2="5" type="fence" /> 
-        <DrawBlock x="3" y="4" z="5" type="fence_gate" />
-        <DrawLine x1="4"  y1="4" z1="5"  x2="5" y2="4" z2="5" type="fence" /> 
-        <DrawLine x1="5"  y1="4" z1="5"  x2="5" y2="4" z2="1" type="fence" />
-        <DrawLine x1="5"  y1="4" z1="1"  x2="4" y2="4" z2="1" type="fence" />
-        <DrawBlock x="3" y="4" z="1" type="fence_gate" />
-        <DrawLine x1="2"  y1="4" z1="1"  x2="1" y2="4" z2="1" type="fence" /> -->
+        <DrawLine x1="0"  y1="4" z1="-1"  x2="7" y2="4" z2="-1" type="fence" /> 
+        <DrawBlock x="7" y="4" z="-2 " type="fence" />
+        <DrawBlock x="7" y="4" z="-5 " type="fence" />
+        
 
         <!--Spawn sheep inside the pen-->
         <!-- <DrawEntity x="3" y="4" z="3" type="Sheep"/>
