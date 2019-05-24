@@ -23,7 +23,6 @@ class World:
         self.world_state = None
         self.shouldReturn = False
         self.holding_wheat = False
-        self.stall = False
 
     def getValidActions(self):
         return [0, 1, 2, 3, 4]
@@ -43,19 +42,30 @@ class World:
     def observe(self):
         return self.world.reshape(-1)
 
+    def agentInPen(self):
+        x, z = self.state
+        return 5 > x > 0 and -1 > z > -5
+
+    def sheepInPen(self, x, z):
+        return 6 > x > 0 and -1 > z > -5
+
     def returnToStart(self):
         x, z = self.state
-        deltax = x - 0.5
-        deltaz = z - 0.5
-        time.sleep(0.25)
-        if (x, z) == (0, 0):
-            self.shouldReturn = False
-            # WE SHOULD TELEPORT THE AGENT OR SOMETHING HERE????
-            return 1
-        if deltax > deltaz:
+        time.sleep(0.3)
+
+        if self.agentInPen():
+            if self.shouldReturn:
+                self.shouldReturn = False
+                return 5
+            else:
+                return 6
+
+        if x > 9:
             return 3
-        else:
+        elif z > -3:
             return 0
+        else:
+            return 3
 
     def update_state(self, world_state, action, agent_host):
         self.total_steps -= 1
@@ -93,13 +103,13 @@ class World:
                         # agent_host.sendCommand("hotbar.2 1")
                         # agent_host.sendCommand("hotbar.2 0")
 
-                        if (row, col) == (0, 0):
-                            reward += 300
+                        if self.sheepInPen(x, z):
+                            reward += 500
                         elif i["id"] not in self.sheeps:
                             self.sheeps.add(i["id"])
                             reward += 100
                             self.shouldReturn = True
-                        if action == 4: # Good if the action shows wheat near a sheep:
+                        if action == 4:  # Good if the action shows wheat near a sheep:
                             reward += 200
 
                     self.world[x][z] = 2
