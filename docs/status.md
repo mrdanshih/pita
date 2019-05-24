@@ -44,11 +44,13 @@ Although this particular policy is hardcoded, the agent still must learn that to
 
 Figure 1. Visualization of Neural Network
 
-For our neural network, the 256 nodes comes from our 16x16 pen space, there are 16\*16 = 256 cells accessible to the agent.
+For our neural network, the 256 nodes comes from our 16x16 pen space, there are `16\*16 = 256 cells` accessible to the agent.
 
 The keras deep learning library is configured to use 4 input layers in a neural network, with the reinforcement learning helping tweak the neural network so we develop an optimal decision policy.
 
 When training begins, a random policy is used, but as more iterations of training occur, the neural network learns a better policy based on the rewards defined for each action above. We feed in the state of the world as a flattened input vector of the Malmo Minecraft grid, marking locations of agent and sheep. The network then outputs Q-values for the possible actions the agent can take at that state.
+
+<script src="https://gist.github.com/ryanyue123/afcdedc67c795dfd9a2b5d3e81e09761.js"></script>
 
 As in many Q-learning scenarios, we have the agent occasionally take a random action in order to explore the environment more and acquire new experiences. This allows it to possible find new action sequences that can lead to larger rewards. We configure this to occur about 10% of the time, where in the other 90% of actions the agent uses the neural network’s learned policy to choose an action.
 
@@ -83,7 +85,7 @@ A major challenge that we anticipate is the long training time of our deep Q net
 
 ### Resources Used
 
-- Rat Maze Deep RL https://www.samyzaf.com/ML/rl/qmaze.html
-- Deep Q Learning with Keras https://keon.io/deep-q-learning/
-- Simple Reinforcement Learning with Tensorflow https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0
+- [Rat Maze Deep RL](https://www.samyzaf.com/ML/rl/qmaze.html)
+- [Deep Q Learning with Keras](https://keon.io/deep-q-learning/)
+- [Simple Reinforcement Learning with Tensorflow](https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0)
 - Python Malmo Tutorials
