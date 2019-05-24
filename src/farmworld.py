@@ -3,7 +3,7 @@ import json
 import math
 import time
 
-GATE_COORDINATES = (0, 0)
+GATE_COORDINATES = (3, -3)
 
 
 class World:
@@ -12,6 +12,7 @@ class World:
 
     def reset(self):
         self.coords = (0, 0)
+        self.prevCoords = (0, 0)
         self.state = (0, 0)
         self.total_reward = 0
         self.total_steps = 100
@@ -60,8 +61,10 @@ class World:
             else:
                 return 6
 
-        if x > 9:
+        if x > 9 and z < -1:
             return 3
+        elif x < 8 and z > -3:
+            return 2
         elif z > -3:
             return 0
         else:
@@ -76,13 +79,15 @@ class World:
             print('INVALID ACCTION')
             reward -= 500
 
-        if action == 4:
-            if self.prevAction == 4:    # Punish redundantly choosing show wheat
-                reward -= 200
-            else:
-                reward += 50
-
         if world_state.number_of_observations_since_last_state > 0:
+            if action == 4:
+                if self.prevAction == 4:    # Punish redundantly choosing show wheat
+                    reward -= 200
+                else:
+                    reward += 50
+            elif self.coords == self.prevCoords:    # Punish move actions that lead to nowhere (due to hitting border for example)
+                reward -= 200
+
             msg = world_state.observations[-1].text
             ob = json.loads(msg)
             self.world_state = ob
@@ -91,6 +96,7 @@ class World:
                 x = round(i["x"] - 0.5)
                 z = round(i["z"] - 0.5)
                 if i["name"] == "Agnis":
+                    self.prevCoords = self.coords
                     self.coords = (i["x"], i["z"])
                     self.world[x][z] = 1
                     self.state = (x, z)
