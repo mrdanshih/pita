@@ -81,3 +81,10 @@ Right now, our agent gets pretty good at luring one sheep back to the pen. In th
 # Challenges
 
 A major challenge that we anticipate is the long training time of our deep Q network. Given that each episode is 20 seconds, running 1000 episodes will take over 5 hours of training time. We need to be mindful of this training time and give ourselves enough buffer time before the final report is due in order to train the agent. We also need to make sure that we are saving the weights of our neural network so that we don’t start from scratch every time we make a change.
+
+### Resources Used
+
+- Rat Maze Deep RL https://www.samyzaf.com/ML/rl/qmaze.html
+- Deep Q Learning with Keras https://keon.io/deep-q-learning/
+- Simple Reinforcement Learning with Tensorflow https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0
+- Python Malmo Tutorials
