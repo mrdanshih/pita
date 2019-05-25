@@ -7,6 +7,9 @@ title: Status
 
 ## Project Status
 
+### Video
+[Video Link](https://youtu.be/e_fzSkJSEpA)
+
 ### Summary
 
 The main idea of the project is based on collecting and gathering wild animals (sheep) from the world and luring them into a pen. The agent will have no previous knowledge of the benefits/consequences of his actions in the world. During a set duration of time (20 seconds), the agent figure out how to get to sheep and to lure it back into a pen.
@@ -68,10 +71,23 @@ The overall learning algorithm used is thus as follows. It’s based off of taki
 
 Currently, the agent is score is determined based on his ability to lure the sheep back into the pen. We label an episode as a "win" if the agent's final score is above 0 and a loss if the agent's final score is below 0. For the Deep Q Network, we use Mean Square Error between the actual Q-Value and the predicted Q-Value to evaluate our agent’s performance.
 
+<img src="rewardgrid.png" width="600" style="display: block; margin: auto"> 
+Figure 2. Grid and Example Calculations for Reward per Cell
+This diagram shows a basic outline of the reward received when the agent moves to certain cells. The agent begins at (0, 0) and each movement to a cell gives a reward of the negative of the Euclidean Distance from the agent’s location to a sheep. Any cell within 4 of the sheep gives +100 reward and successfully luring the sheep back to the pen gives +500 reward.
+
 Below are some graphs showing the agent's score over time.
 
 <img src="graph1.png" width="600" style="display: block; margin: auto"> 
+Figure 3. Average Max Reward per Mission (Agent learns to show wheat)
+The following histogram shows the average max reward per mission for the agent learning to show the wheat (make it the active, held item in his inventory).
+
 <img src="graph2.png" width="600" style="display: block; margin: auto">
+Figure 4. Average Max Reward per Mission (Agent learns to show wheat & lure sheep to pen)
+This histogram shows the average max reward per mission for the agent learning to show the wheat and lure the sheep back to the pen. This graph demonstrates that negative maximum reward is more common when the agent has to learn to show the wheat and lure the sheep back to the pen. The negativeness can be attributed to the increased complexity.
+
+<img src="numactions.png" width="600" style="display: block; margin: auto">
+Figure 5. Number of Actions per Mission
+This histogram gives us some information about how many actions per mission the agent generally takes.
 
 ### Remaining Goals and Challenges
 
