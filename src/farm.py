@@ -38,7 +38,7 @@ from keras.optimizers import SGD, Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
 
 actionMap = {0: 'movenorth 1', 1: 'movesouth 1',
-             2: 'moveeast 1', 3: 'movewest 1', 4: 'hotbar.2 1', 5: 'hotbar.1 1', 6: "tp 0.5 4 0.5"}
+             2: 'moveeast 1', 3: 'movewest 1', 4: 'hotbar.2 1', 5: 'hotbar.1 1'}
 
 
 def build_model(world, num_actions, lr=0.001):
@@ -99,10 +99,14 @@ if __name__ == "__main__":
         mission_xml = f.read()
         my_mission = MalmoPython.MissionSpec(mission_xml, True)
 
+
     max_retries = 10
     num_repeats = 100
     mission_avg_rewards = []
     mission_max_rewards = []
+    mission_num_actions = []
+
+    f = open("numactions.txt", "a")
     for i in range(num_repeats):
         rewards = []
         world.reset()
@@ -114,12 +118,10 @@ if __name__ == "__main__":
 
         # Record video config. Record just the first 10 missions or last 10 in the training
         if i < 10 or 40 < i < 50 or 90 < i < 100:
-            my_mission_record = MalmoPython.MissionRecordSpec(
-                "sheep_lurer_recording_" + str(i) + ".tgz")
+            my_mission_record = MalmoPython.MissionRecordSpec("sheep_lurer_recording_" + str(i) + ".tgz")
             my_mission.requestVideo(800, 500)
-            # records video with 30fps and at 1000000 bit rate
-            my_mission_record.recordMP4(30, 1000000)
-            my_mission.setViewpoint(1)
+            my_mission_record.recordMP4(30, 1000000); #records video with 30fps and at 1000000 bit rate
+            my_mission.setViewpoint( 1 )
 
         for retry in range(max_retries):
             try:
@@ -141,19 +143,18 @@ if __name__ == "__main__":
             for error in world_state.errors:
                 print("Error:", error.text)
         print()
-        # Hide the wheat to start each mission.
+         # Hide the wheat to start each mission.
         agent_host.sendCommand("hotbar.1 1")
         agent_host.sendCommand("hotbar.1 0")
         # -- run the agent in the world -- #
+        num_actions = 0
         while world_state.is_mission_running:
             time.sleep(0.01)
             prev_envstate = envstate
 
-            remember = True
             if world.shouldReturn:
                 print('Return action: ', end="")
                 action = world.returnToStart()
-                remember = False
             elif np.random.rand() < 0.10:
                 print('Random action: ', end="")
                 action = random.choice(world.getValidActions())
@@ -163,6 +164,7 @@ if __name__ == "__main__":
             print(action)
 
             take_action(agent_host, world, actionMap[action])
+            num_actions += 1
 
             world_state = agent_host.getWorldState()
             envstate, reward, game_status = world.update_state(
@@ -176,7 +178,7 @@ if __name__ == "__main__":
             game_over = game_status == 'win' or game_status == 'lose'
             episode = [prev_envstate, action, reward, envstate, game_over]
 
-            if remember:
+            if not world.shouldReturn:
                 experience.remember(episode)
                 inputs, targets = experience.get_data(data_size=data_size)
                 h = model.fit(
@@ -187,6 +189,7 @@ if __name__ == "__main__":
                     verbose=0,
                 )
                 loss = model.evaluate(inputs, targets, verbose=0)
+               
 
             if game_over:
                 agent_host.sendCommand("quit")
@@ -197,13 +200,17 @@ if __name__ == "__main__":
         template = "Iteration: {:d} | Average Reward: {:.4f} | Max Reward: {:.4f}"
         avg_reward = sum(rewards) / len(rewards)
         mission_avg_rewards.append(avg_reward)
-        max_reward = max([r for r in rewards if r != -1])  # ignore -1 rewards
+        max_reward = max([r for r in rewards if r != -1]) # ignore -1 rewards
         mission_max_rewards.append(max_reward)
-        print(template.format(i, avg_reward if rewards else 0,
-                              max_reward if rewards else 0))
+        mission_num_actions.append(num_actions)
+        print(template.format(i, avg_reward if rewards else 0, max_reward if rewards else 0))
+        print("num actions: ", num_actions)
         time.sleep(0.5)  # (let the Mod reset)
     print("All mission average rewards: ", mission_avg_rewards)
     print("All mission max rewards: ", mission_max_rewards)
+    print("All mission number of actions: ", mission_num_actions)
+    f.write(str(mission_num_actions))
+    f.close()
     h5file = "model" + ".h5"
     json_file = "model" + ".json"
     model.save_weights(h5file, overwrite=True)
