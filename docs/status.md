@@ -85,9 +85,7 @@ The following histogram shows the average max reward per mission for the agent l
 Figure 4. Average Max Reward per Mission (Agent learns to show wheat & lure sheep to pen)
 This histogram shows the average max reward per mission for the agent learning to show the wheat and lure the sheep back to the pen. This graph demonstrates that negative maximum reward is more common when the agent has to learn to show the wheat and lure the sheep back to the pen. The negativeness can be attributed to the increased complexity.
 
-<img src="numactions.png" width="600" style="display: block; margin: auto">
-Figure 5. Number of Actions per Mission
-This histogram gives us some information about how many actions per mission the agent generally takes.
+An addition to our code showed us that the agent generally takes about 99.64 actions per mission. Most missions had 100 actions taken.
 
 ### Remaining Goals and Challenges
 
