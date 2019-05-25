@@ -8,7 +8,7 @@ title: Status
 ## Project Status
 
 ### Video
-[Video Link](https://youtu.be/e_fzSkJSEpA)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/e_fzSkJSEpA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ### Summary
 
