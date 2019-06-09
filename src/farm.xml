@@ -13,9 +13,9 @@
     <ServerHandlers>
       <FlatWorldGenerator generatorString="3;7,2*3,2;1;village"/>
       <DrawingDecorator>
-        <!--Draw a 15x15 boundary-->
-        <DrawCuboid x1="-1"  y1="4" z1="-6"  x2="15" y2="4" z2="15" type="dark_oak_fence" />
-        <DrawCuboid x1="0"  y1="4" z1="-5"  x2="14" y2="4" z2="14" type="air" />
+        <!--Draw a 20x20 boundary-->
+        <DrawCuboid x1="-1"  y1="4" z1="-6"  x2="20" y2="4" z2="20" type="dark_oak_fence" />
+        <DrawCuboid x1="0"  y1="4" z1="-5"  x2="19" y2="4" z2="19" type="air" />
 
 
         <!--Draw a 5x5 pen -->
@@ -30,8 +30,9 @@
 
         <!--Spawn a wolf and some sheep outside the pen-->
         <!-- <DrawEntity x="9" y="4" z="9" type="Wolf"/> -->
-        <DrawEntity x="14" y="4" z="15" type="Sheep"/>
- <!--        <DrawEntity x="14" y="4" z="1" type="Sheep"/> -->
+        <DrawEntity x="19" y="4" z="20" type="Sheep"/>
+        <DrawEntity x="1" y="4" z="10" type="Sheep"/>
+        <DrawEntity x="9" y="4" z="2" type="Sheep"/>
       </DrawingDecorator>
 
       <ServerQuitFromTimeUp timeLimitMs="20000"/>

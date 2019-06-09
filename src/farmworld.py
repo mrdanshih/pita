@@ -20,7 +20,7 @@ class World:
 
         self.actions = 5
         self.prevAction = None
-        self.world = np.zeros((16, 16))
+        self.world = np.zeros((21, 21))
         self.world_state = None
         self.shouldReturn = False
         self.holding_wheat = False
