@@ -38,7 +38,7 @@ from keras.optimizers import SGD, Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
 
 actionMap = {0: 'movenorth 1', 1: 'movesouth 1',
-             2: 'moveeast 1', 3: 'movewest 1', 4: 'hotbar.2 1', 5: 'hotbar.1 1'}
+             2: 'moveeast 1', 3: 'movewest 1', 4: 'hotbar.2 1', 5: 'hotbar.1 1', 6: 'tp 0.5 4 0.5'}
 
 
 def build_model(world, num_actions, lr=0.001):

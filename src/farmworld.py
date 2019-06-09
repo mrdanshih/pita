@@ -18,7 +18,7 @@ class World:
         self.total_steps = 100
         self.sheeps = set()
 
-        self.actions = 6
+        self.actions = 7
         self.prevAction = None
         self.world = np.zeros((21, 21))
         self.world_state = None
@@ -26,7 +26,7 @@ class World:
         self.holding_wheat = False
 
     def getValidActions(self):
-        return [0, 1, 2, 3, 4, 5]
+        return [0, 1, 2, 3, 4, 5, 6]
 
     def game_status(self):
         if self.total_steps > 0:

@@ -35,7 +35,7 @@
         <DrawEntity x="9" y="4" z="2" type="Sheep"/>
       </DrawingDecorator>
 
-      <ServerQuitFromTimeUp timeLimitMs="20000"/>
+      <ServerQuitFromTimeUp timeLimitMs="40000"/>
       <ServerQuitWhenAnyAgentFinishes/>
     </ServerHandlers>
   </ServerSection>
