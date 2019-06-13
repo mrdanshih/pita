@@ -105,8 +105,12 @@ if __name__ == "__main__":
     mission_avg_rewards = []
     mission_max_rewards = []
     mission_num_actions = []
+    mission_losses = []
 
     f = open("numactions.txt", "a")
+    f1 = open("average_rewards.txt", "w")
+    f2 = open("max_rewards.txt", "w")
+    f3 = open("loss.txt", "w")
     for i in range(num_repeats):
         rewards = []
         world.reset()
@@ -189,6 +193,7 @@ if __name__ == "__main__":
                     verbose=0,
                 )
                 loss = model.evaluate(inputs, targets, verbose=0)
+                mission_losses.append(loss)
                
 
             if game_over:
@@ -209,8 +214,15 @@ if __name__ == "__main__":
     print("All mission average rewards: ", mission_avg_rewards)
     print("All mission max rewards: ", mission_max_rewards)
     print("All mission number of actions: ", mission_num_actions)
-    f.write(str(mission_num_actions))
+    print("All mission loss: ", mission_losses)
+    f1.write("\n".join((str(x) for x in mission_avg_rewards)))
+    f2.write("\n".join((str(x) for x in mission_max_rewards)))
+    f.write("\n".join((str(x) for x in mission_num_actions)))
+    f3.write("\n".join((str(x) for x in mission_losses)))
     f.close()
+    f2.close()
+    f1.close()
+    f3.close()
     h5file = "model" + ".h5"
     json_file = "model" + ".json"
     model.save_weights(h5file, overwrite=True)
