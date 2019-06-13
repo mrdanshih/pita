@@ -25,8 +25,9 @@ class World:
         self.shouldReturn = False
         self.holding_wheat = False
 
+    # only allow agent to use the first 5 as actions
     def getValidActions(self):
-        return [0, 1, 2, 3, 4, 5, 6]
+        return [0, 1, 2, 3, 4]
 
     def game_status(self):
         if self.total_steps > 0:
@@ -91,6 +92,7 @@ class World:
             msg = world_state.observations[-1].text
             ob = json.loads(msg)
             self.world_state = ob
+
             for i in ob["entities"]:
 
                 x = round(i["x"] - 0.5)
@@ -126,7 +128,7 @@ class World:
                     # Less negative reward when sheep is closer to "GATE"/GOAL
                     dx = i["x"] - GATE_COORDINATES[0]
                     dz = i["z"] - GATE_COORDINATES[1]
-                    dist2 = (dx**2 + dz**2)
+                    dist2 = math.sqrt(dx**2 + dz**2)
                     if dist2 < 50:
                         reward += 100
                     reward -= dist2
