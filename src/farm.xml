@@ -4,7 +4,6 @@
   <About>
     <Summary>Animal Hoarding</Summary>
   </About>
-
   <ServerSection>
     <ServerInitialConditions>
         <Time><StartTime>1</StartTime></Time>
@@ -31,8 +30,8 @@
         <!--Spawn a wolf and some sheep outside the pen-->
         <!-- <DrawEntity x="9" y="4" z="9" type="Wolf"/> -->
         <DrawEntity x="19" y="4" z="20" type="Sheep"/>
-        <DrawEntity x="1" y="4" z="10" type="Sheep"/>
-        <DrawEntity x="9" y="4" z="2" type="Sheep"/>
+        <DrawEntity x="10" y="4" z="10" type="Sheep"/>
+        <DrawEntity x="15" y="4" z="5" type="Sheep"/>
       </DrawingDecorator>
 
       <ServerQuitFromTimeUp timeLimitMs="40000"/>
