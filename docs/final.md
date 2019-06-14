@@ -17,9 +17,9 @@ The agent will have access to a detailed 2D grid of the world that specifies the
 
 ## Approach
 
-In this section, describe both the baselines and your proposed approach(es). Describe precisely what the advantages and disadvantages of each are, for example, why one might be more accurate, need less data, take more time, overfit, and so on. Include enough technical information to be able to (mostly) reproduce your project, in particular, use pseudocode and equations as much as possible.
-
 We utilize deep Q-learning with neural networks in this project. Like any classical Q-learning problem, the agent will experiment and exploit past experiences (episodes) in order to maximize its reward. The gist is that the network will be used to predict an action the agent should take at a particular state, based on the action that maximizes the agent’s immediate and future reward at that state.
+
+The use of deep Q-learning here is advantageous as it allows the agent to learn the best actions/policy to take in the environment based on a reward system, without needing to feed in training data like a supervised learning approach would require. However, a drawback with this approach is that the agent only learns to adapt to the particular world its placed in - it won’t immediately adapt to a completely different world layout without having to re-learn the best policy to take. This aside, reinforcement learning is still preferred here rather than direct supervised learning, or a hand-coded policy or traversal algorithm, as there are a huge number of states at play here in the sheep herding problem. Combining a neural network with reinforcement learning simplifies the overhead and allows more flexibility for the agent to learn on its own, rather than following some pre-defined algorithm.
 
 Because the sheep in Minecraft can wander on its own, which is not predictable, there is a huge number of possible states in this environment. With a map size of 16 x 16 and multiple entities (agent and 2 sheep) on the map, we have 16777216 possible states and the 5 actions for each state. This is the key reason why we use deep Q-learning in this project, as a simpler reinforcement learning method like tabular Q-learning would not scale to this problem.
 
@@ -70,7 +70,6 @@ The overall learning algorithm used is thus as follows. It’s based off of taki
 
 <script src="https://gist.github.com/ryanyue123/afcdedc67c795dfd9a2b5d3e81e09761.js"></script>
 
-The use of reinforcement learning here is advantageous as it allows the agent to learn the best actions/policy to take in the environment based on a reward system, without needing to feed in training data like a supervised learning approach would require. However, a drawback with this approach is that the agent only learns to adapt to the particular world its placed in - it won’t immediately adapt to a completely different world layout without having to re-learn the best policy to take.
 
 ## Evaluation
 
@@ -115,4 +114,4 @@ Overall, we learned a lot about AI/ML algorithms, implementation, libraries, and
 - [Rat Maze Deep RL](https://www.samyzaf.com/ML/rl/qmaze.html)
 - [Deep Q Learning with Keras](https://keon.io/deep-q-learning/)
 - [Simple Reinforcement Learning with Tensorflow](https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0)
-- Python Malmo Tutorials
+- [Python Malmo Tutorials](https://github.com/Microsoft/malmo/tree/master/Malmo/samples/Python_examples)
