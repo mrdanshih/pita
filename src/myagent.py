@@ -53,6 +53,8 @@ class Experience(object):
                 targets[i, action] = reward
             else:
                 # reward + gamma * max_a' Q(s', a')
+                # print("i: ", i)
+                # print("action: ", action)
                 targets[i, action] = reward + self.discount * Q_sa
         return inputs, targets
 
