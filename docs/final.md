@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Final
+title: Final Report
 ---
 
 # PITA - Capture the Sheep! Final Report
